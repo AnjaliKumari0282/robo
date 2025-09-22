@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Robot Model - Talking Jarvish</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+    canvas { display: block; }
+    #talkButton {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: #fde047;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <button id="talkButton">🗣 Make Robot Talk</button>
+
+  <!-- Load Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <script>
+    // Scene Setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111111);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 12;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+
+    const robotMaterial = new THREE.MeshStandardMaterial({
+      color: 0xfde047, metalness: 0.5, roughness: 0.3
+    });
+
+    const robot = new THREE.Group();
+
+    const head = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), robotMaterial);
+    head.position.y = 5.5;
+    robot.add(head);
+
+    const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+    const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.2), eyeMaterial);
+    const rightEye = leftEye.clone();
+    leftEye.position.set(-0.5, 5.8, 1.1);
+    rightEye.position.set(0.5, 5.8, 1.1);
+    robot.add(leftEye, rightEye);
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 2), robotMaterial);
+    body.position.y = 2.5;
+    robot.add(body);
+
+    const armGeometry = new THREE.CylinderGeometry(0.4, 0.4, 3);
+    const leftArm = new THREE.Mesh(armGeometry, robotMaterial);
+    leftArm.position.set(-2.2, 3, 0);
+    robot.add(leftArm);
+
+    const rightArm = leftArm.clone();
+    rightArm.position.x = 2.2;
+    robot.add(rightArm);
+
+    const legGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3);
+    const leftLeg = new THREE.Mesh(legGeometry, robotMaterial);
+    leftLeg.position.set(-0.8, 0, 0);
+    robot.add(leftLeg);
+
+    const rightLeg = leftLeg.clone();
+    rightLeg.position.x = 0.8;
+    robot.add(rightLeg);
+
+    scene.add(robot);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      robot.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 🔊 Voice: Robot Talk Function
+    function robotSpeak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.pitch = 1.1;
+      utterance.rate = 1;
+      utterance.volume = 1;
+      utterance.voice = speechSynthesis.getVoices().find(v => v.name.includes("Google") || v.name.includes("Male")) || null;
+      speechSynthesis.speak(utterance);
+    }
+
+    // 🎤 On button click
+    const button = document.getElementById("talkButton");
+    const phrases = [
+      "Hello Boss. I am Jarvish, your personal assistant.",
+      "How can I help you today?",
+      "Initializing systems. Everything is running smoothly.",
+      "You look awesome today, Boss.",
+      "Would you like me to launch a project?"
+    ];
+    button.addEventListener("click", () => {
+      const randomLine = phrases[Math.floor(Math.random() * phrases.length)];
+      robotSpeak(randomLine);
+    });
+  </script>
+</body>
+</html>
